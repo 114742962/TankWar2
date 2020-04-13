@@ -31,6 +31,12 @@ public class HeroTank extends Tank {
     public Color colorOfFriendlyMissile = Color.BLACK;
     /** 敌方主坦克炮弹的颜色 */
     public Color colorOfEnermyMissile = Color.RED;
+    /** 是否第一次被画 */
+    public boolean drawFirstTime = true;
+    /** 渐变初始颜色 */
+    public Color startColor;
+    /** 渐变结束颜色 */
+    public Color endColor;
     /** 记录左方向按键的状态，true表示按键被按压中，false表示按键被释放了 */
     private boolean beLeft = false;
     /** 记录右方向按键的状态，true表示按键被按压中，false表示按键被释放了 */
@@ -53,9 +59,13 @@ public class HeroTank extends Tank {
     /**
          * 重写父类方法，画出主坦克的方法
      */
-    public void draw(Graphics g, Color startColor, Color endColor) {
+    public void draw(Graphics g) {
         if(!this.getAliveOfTank()) {
             return;
+        }
+        
+        if (drawFirstTime != false) {
+            drawFirstTime = false;
         }
 
         // 定义坦克的格式

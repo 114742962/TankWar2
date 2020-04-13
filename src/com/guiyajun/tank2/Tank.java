@@ -38,7 +38,9 @@ public class Tank {
     /** 坦克的y坐标 */
     public int y = 0;
     /** 坦克的颜色 */
-    Color colorOfTank = Color.DARK_GRAY;
+    public Color colorOfTank = Color.DARK_GRAY;
+    /** 坦克的编号 */
+    public int id;
     /** 坦克的初始移动方向 */
     protected Direction directionOfTank = Direction.STOP;
     /** 炮筒的初始方向 */
@@ -69,14 +71,30 @@ public class Tank {
     }
     
     /**
+     * 
     * @Description: 创建一个新的实例 Tank.
-    * @param x  x坐标
-    * @param y  y坐标
-    * @param friendly   相对于主坦克的友好性
-    * @param tankWarClient 客户端实例
+    * @param x
+    * @param y
+    * @param friendly
+    * @param tankWarClient
      */
     public Tank(int x, int y, boolean friendly, TankWarClient tankWarClient) {
         this(x, y, friendly);
+        this.tankWarClient = tankWarClient;
+    }
+    
+    /**
+     * 
+    * @Description: 创建一个新的实例 Tank.
+    * @param x
+    * @param y
+    * @param colorOfTank
+    * @param friendly
+    * @param tankWarClient
+     */
+    public Tank(int x, int y, Color colorOfTank, boolean friendly, TankWarClient tankWarClient) {
+        this(x, y, friendly);
+        this.colorOfTank = colorOfTank;
         this.tankWarClient = tankWarClient;
     }
     

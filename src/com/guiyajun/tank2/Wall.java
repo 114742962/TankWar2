@@ -22,12 +22,16 @@ public class Wall {
     public int height;
     /** 客户端实例变量用于管理元素 */
     public TankWarClient twc = null;
+    /** 是否第一次被画 */
+    public boolean drawFirstTime = true;
+    /** 渐变初始颜色 */
+    public Color startColor;
+    /** 渐变结束颜色 */
+    public Color endColor;
     /** 墙壁的x坐标 */
     private int x;
     /** 墙壁的y坐标 */
     private int y;
-    /** 是否第一次被画 */
-    private boolean drawFirstTime = true;
     
     /**
     * @Description: 创建一个新的实例 Wall.
@@ -52,7 +56,7 @@ public class Wall {
     * @return void    返回类型
     * @throws
      */
-    public void draw(Graphics g, Color startColor, Color endColor) {
+    public void draw(Graphics g) {
         if (this.drawFirstTime = true) {
             this.drawFirstTime = false;
         }

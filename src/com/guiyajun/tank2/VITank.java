@@ -42,7 +42,7 @@ public class VITank extends Tank {
     * @param y
     * @param friendly
     */
-    public VITank(int x, int y, Color colorOfTank, boolean friendly) {
+    public VITank(int x, int y, boolean friendly) {
         super(x, y, friendly);
     }
 
@@ -54,7 +54,7 @@ public class VITank extends Tank {
     * @param tankWarClient
     */
     public VITank(int x, int y, Color colorOfTank, boolean friendly, TankWarClient tankWarClient) {
-        super(x, y, friendly, tankWarClient);
+        super(x, y, colorOfTank, friendly, tankWarClient);
     }
     
     @Override
