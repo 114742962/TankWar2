@@ -40,7 +40,7 @@ public class Tank {
     /** 坦克的颜色 */
     public Color colorOfTank = Color.DARK_GRAY;
     /** 坦克的编号 */
-    public int id;
+    public int id = 100;
     /** 坦克的初始移动方向 */
     protected Direction directionOfTank = Direction.STOP;
     /** 炮筒的初始方向 */
@@ -443,17 +443,6 @@ public class Tank {
     public void draw(Graphics g) {
         
     }
-    
-    /**
-    * @Title: draw
-    * @Description: 在游戏客户端主界面画出渐变色坦克的方法，由子类自己实现
-    * @param @param g
-    * @param @param startColor
-    * @param @param endColor    参数 
-    * @return void    返回类型
-    * @throws
-    */
-    public void draw(Graphics g, Color startColor, Color endColor) {}
     
     public boolean getAliveOfTank() {
         return aliveOfTank;

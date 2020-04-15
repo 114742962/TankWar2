@@ -31,7 +31,7 @@ import java.net.InetSocketAddress;
 public class TankNewMessage implements Message{
     private int messageType = TANK_NEW_MESSAGE;  
     Tank myTank = null;
-    TankWarClient twc = null;
+    TankWarClient tankWarClient = null;
     private int serverUDPPort;
     private String serverIP;
     
@@ -41,8 +41,8 @@ public class TankNewMessage implements Message{
         this.serverIP = NetClient.serverIP;
     }
     
-    TankNewMessage(TankWarClient twc) {
-        this.twc = twc;
+    TankNewMessage(TankWarClient tankWarClient) {
+        this.tankWarClient = tankWarClient;
         this.serverUDPPort = NetServer.serverUDPPort;
         this.serverIP = NetClient.serverIP;
     }
@@ -80,6 +80,7 @@ public class TankNewMessage implements Message{
                 }
             }
         }
+        
         if (baos != null) {
             byte[] buf = baos.toByteArray();
             DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length, 
@@ -105,18 +106,18 @@ public class TankNewMessage implements Message{
         
         try {
             int id = dis.readInt();
-            if (twc.myTank != null && id == twc.myTank.id) {
-System.out.println("1");                
+            if (tankWarClient.myTank != null && id == tankWarClient.myTank.id) {
                 return;
             }
+            
             int x = dis.readInt();
             int y = dis.readInt();
             int bloodOfTank = dis.readInt();
             Direction dir = Direction.values()[dis.readInt()];
             boolean friendly = dis.readBoolean();
             boolean exists = false;
-            for (int i=0; i<twc.HeroTanksList.size(); i++) {
-                Tank tank = twc.HeroTanksList.get(i);
+            for (int i=0; i<tankWarClient.HeroTanksList.size(); i++) {
+                Tank tank = tankWarClient.HeroTanksList.get(i);
                 if (tank.id == id) {
                     exists = true;
                     break;
@@ -124,8 +125,8 @@ System.out.println("1");
             }
             
             if (exists == false) {
-                Message message = new TankNewMessage(twc.myTank);
-                twc.netClient.sendMessage(message);
+                Message message = new TankNewMessage(tankWarClient.myTank);
+                tankWarClient.netClient.sendMessage(message);
 System.out.println("Got a Tank_new_message from server!");
 System.out.println("messageType:" + messageType + "-id:" + id + "-x:" + x + "-y:" + y 
     + "-dir:" + dir + "-friendly:" + friendly);
@@ -133,15 +134,16 @@ System.out.println("messageType:" + messageType + "-id:" + id + "-x:" + x + "-y:
                 HeroTank tank = null;
                 
                 if (id <= 110) {
-                    tank = new HeroTank(700, 540 - 50 * (id - 100), true, twc);
+                    tank = new HeroTank(700, 540 - 50 * (id - 100), true, tankWarClient);
                 } else {
-                    tank = new HeroTank(70, 540 - 50 * (id - 100), true, twc);
+                    tank = new HeroTank(70, 540 - 50 * (id - 100), true, tankWarClient);
                 }
                 
                 if (tank != null) {
                     tank.id = id;
                     tank.setBloodOfTank(bloodOfTank);
-                    twc.HeroTanksList.add(tank);
+                    tankWarClient.HeroTanksList.add(tank);
+                    System.out.println("add the tank to HeroTanksList!");
                 }
             }
         } catch (IOException e) {

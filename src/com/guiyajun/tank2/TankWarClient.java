@@ -109,18 +109,19 @@ public class TankWarClient extends Frame {
         this.setResizable(false);
         this.setBackground(Color.WHITE);
         this.setVisible(true);
-        
+
         ConnectJDialog connectJDialog = new ConnectJDialog();
         connectJDialog.setVisible(true);
-        
-        // 创建一个主坦克
-        myTank = new HeroTank(500, 500, true, this);
+
         // 在界面左边实例化一个钢化墙壁
         wallLeft = new Wall(180, 150, 20, 350, this);
         // 在界面右边实例化一个钢化墙壁
         wallRight = new Wall(600, 150, 20, 350, this);
         // 判断是否为单机版
         if (false == mode) {
+            // 如果是单机版则创造主坦克
+            myTank = new HeroTank(600, 500, true, this);
+            
             // 如果是单机版则创造出友方机器人坦克，数量由自己指定
             for (int i = 0; i < friendlyVITanksNumber; i++) {
                 viTanksList.add(new VITank(700, 80 + i * 50, colorOfFriendlyVITank, true, this));
@@ -133,11 +134,28 @@ public class TankWarClient extends Frame {
 
         // 加入右上角关闭客户端按钮监听
         this.addWindowListener(new WindowAdapter() {
-
             @Override
             public void windowClosing(WindowEvent e) {
+                Message message = null;
+                
+                if (myTank != null) {
+                    message = new TankExitMessage(myTank);
+                    myTank.setAliveOfTank(false);
+                }
+                
                 setVisible(false);
-                System.exit(0);
+                
+                if (netClient != null && message != null) {
+                    netClient.sendMessage(message);
+                }
+                
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                } finally {
+                    System.exit(-1);
+                }
             }
         });
 
@@ -174,12 +192,17 @@ public class TankWarClient extends Frame {
             myTank.draw(g);
         }
 
-        // 画出所有活着的友方英雄坦克
+        // 画出所有活着的英雄坦克
         for (int i = 0; i < HeroTanksList.size(); i++) {
             HeroTank heroTank = HeroTanksList.get(i);
             if (heroTank.getAliveOfTank()) {
-                initColor();
-                heroTank.draw(g, startColor, endColor);
+                if (heroTank.drawFirstTime != false) {
+                    initColor();
+                    heroTank.startColor = startColor;
+                    heroTank.endColor = endColor;
+                }
+                // 画出英雄坦克
+                heroTank.draw(g);
             } else {
                 HeroTanksList.remove(i);
             }
@@ -203,13 +226,14 @@ public class TankWarClient extends Frame {
             }
         }
 
+        // 画出所有活着的爆炸效果
         for (int i = 0; i < explodesList.size(); i++) {
             Explode explode = explodesList.get(i);
             if (explode.getAliveOfExplode() != false) {
                 explode.draw(g);
             }
         }
-        
+
         // 判断墙体是否第一次被画
         if (wallLeft.drawFirstTime != false) {
             initColor();
@@ -290,11 +314,11 @@ public class TankWarClient extends Frame {
             }
         }
     }
-    
+
     private class ConnectJDialog extends JDialog {
         /**
-        * @Fields field:field:{todo}(用一句话描述这个变量表示什么)
-        */
+         * @Fields field:field:{todo}(用一句话描述这个变量表示什么)
+         */
         private static final long serialVersionUID = 5558568220654573792L;
         ButtonGroup bg = new ButtonGroup();
         JButton button = new JButton("确定");
@@ -304,11 +328,11 @@ public class TankWarClient extends Frame {
         TextField serverTCPPort = new TextField(PropertiesManager.getPerproty("serverTCPPort"), 5);
         TextField serverUDPPort = new TextField(PropertiesManager.getPerproty("serverUDPPort"), 5);
         TextField clientUDPPort = new TextField(PropertiesManager.getPerproty("clientUDPPort"), 5);
-        
+
         ConnectJDialog() {
             super(TankWarClient.this, "Setting");
             this.setSize(190, 230);
-            this.setLocation(350, 300);
+            this.setLocation(400, 300);
             this.setResizable(false);
             this.setModal(true);
             this.setLayout(new FlowLayout());
@@ -325,43 +349,44 @@ public class TankWarClient extends Frame {
             this.add(new Label("clientUDPPort:"));
             this.add(clientUDPPort);
             this.add(button);
-            button.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    mode = true;
-                    int TCPServerPort = Integer.parseInt(serverTCPPort.getText().trim());
-                    int UDPServerPort = Integer.parseInt(serverUDPPort.getText().trim());
-                    int UDPClientPort = Integer.parseInt(clientUDPPort.getText().trim());
-                    String ipOfServer = serverIP.getText();
-                    
-                    NetServer.serverTCPPort = TCPServerPort;
-                    NetServer.serverUDPPort = UDPServerPort;
-                    NetClient.serverIP = ipOfServer;
-                    NetClient.clientUDPPort = UDPClientPort;
-                    
-                    if (radioButtonServer.isSelected() && serverThread == null) {
-                        // 创建一个服务端实例
-                        netServer = new NetServer();                        
-                        serverThread = new ServerThread();
-                        setVisible(false);                        
-                        ThreadPoolService.getInstance().execute(serverThread);
-                    } else if (radioButtonClient.isSelected()) {
-                        netClient = new NetClient(TankWarClient.this);
-                        // 客户端连接服务端
-                        netClient.connect();
-                        setVisible(false);
-                    }
-                }
-            });
-            
+
             this.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
+                    
                     setVisible(false);
+                }
+            });
+
+            button.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    mode = true;
+                    setVisible(false);
+
+                    // 创建一个服务端实例
+                    netServer = new NetServer();
+                    String ip = serverIP.getText();
+                    int TCPServer = Integer.parseInt(serverTCPPort.getText().trim());
+                    int UDPServer = Integer.parseInt(serverUDPPort.getText().trim());
+                    int UDPClient = Integer.parseInt(clientUDPPort.getText().trim());
+                    NetServer.serverTCPPort = TCPServer;
+                    NetServer.serverUDPPort = UDPServer;
+                    netClient = new NetClient(TankWarClient.this);
+                    NetClient.serverIP = ip;
+                    NetClient.clientUDPPort = UDPClient;
+                    if (radioButtonServer.isSelected() && serverThread == null) {
+                        serverThread = new ServerThread();
+                        ThreadPoolService.getInstance().execute(serverThread);
+                    }
+                    // 客户端连接服务端
+                    netClient.connect();
+                    Message message = new TankNewMessage(myTank);
+                    netClient.sendMessage(message);
                 }
             });
         }
     }
-    
+
     private class ServerThread implements Runnable {
 
         public void run() {

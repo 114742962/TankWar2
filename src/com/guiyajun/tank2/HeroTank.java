@@ -77,6 +77,14 @@ public class HeroTank extends Tank {
         graphics2D.fillOval(x, y, TANK_WIDTH, TANK_HEIGHT);
         
         tankMove();
+        if (tankWarClient.mode != false) {
+            TankMoveMessage message = new TankMoveMessage(this);
+            tankWarClient.netClient.sendMessage(message);
+        }
+        
+        g.setColor(Color.DARK_GRAY);
+        // 画出坦克的ID
+        g.drawString("  " + this.id, x, y+50);
         drawBarrel(g);
         drawBlood(g, this.getBloodOfTank());
         
@@ -122,6 +130,8 @@ public class HeroTank extends Tank {
     * @throws
      */
     public void keyReleased(KeyEvent e) {
+        Message message = null;
+        
         int keyCode = e.getKeyCode();
         switch(keyCode) {
             // F2键我方主坦克复位恢复最初始状态
@@ -132,6 +142,11 @@ public class HeroTank extends Tank {
             case KeyEvent.VK_F:
                 tankWarClient.missilesList.add(fire(colorOfFriendlyMissile, this.friendly, 
                     directionOfBarrel));
+                if (tankWarClient.mode != false) {
+                    message = new TankFireMessage(this);
+                    tankWarClient.netClient.sendMessage(message);
+                }
+
                 break;
             case KeyEvent.VK_UP:
                 beUp = false;
@@ -147,6 +162,12 @@ public class HeroTank extends Tank {
                 break;
             // 超级发射一次往八个方向各发射一枚炮弹
             case KeyEvent.VK_A:
+                if (tankWarClient.mode != false) {
+                    if (tankWarClient.mode != false) {
+                        message = new TankSuperFireMessage(this);
+                        tankWarClient.netClient.sendMessage(message);
+                    }
+                }
                 superFire(colorOfFriendlyMissile);
                 break;
             default:
