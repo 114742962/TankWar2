@@ -229,12 +229,4 @@ public class HeroTank extends Tank {
     public void myTankReset() {
         tankWarClient.myTank = new HeroTank(700, 400, true, tankWarClient);
     }
-
-    /**
-    * @Title: getBloodOfTank
-    * @Description: TODO(这里用一句话描述这个方法的作用)
-    * @param @return    参数 
-    * @return String    返回类型
-    * @throws
-    */
 }
